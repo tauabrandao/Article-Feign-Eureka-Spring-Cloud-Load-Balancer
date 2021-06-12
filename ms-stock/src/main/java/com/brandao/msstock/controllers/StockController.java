@@ -2,6 +2,10 @@ package com.brandao.msstock.controllers;
 
 import com.brandao.msstock.dto.StockDTO;
 import com.brandao.msstock.services.StockService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,17 +21,21 @@ public class StockController {
 
     private final StockService service;
 
-    public StockController(StockService service) {
+    private final Environment environment;
+
+    private Logger logger = LoggerFactory.getLogger(StockController.class);
+
+    public StockController(StockService service, Environment environment) {
         this.service = service;
+        this.environment = environment;
     }
 
     @GetMapping("/price/{name}")
     public ResponseEntity<Object> getStockPrice(@PathVariable String name) throws IOException {
-        StockDTO dto = service.getStockPrice(name);
 
-        if(Optional.ofNullable(dto).isEmpty())
-            return ResponseEntity.ok("stock not found");
+        logger.info("The instance running on port %s was called to fetch the stock details"
+                .formatted(environment.getProperty("local.server.port")));
 
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(service.getStockPrice(name));
     }
 }
